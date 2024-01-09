@@ -33,7 +33,7 @@ class HomeController extends GetxController {
   dynamic abiJson;
 
   String? contractAddress =
-      "0xAf06290fbFB3350060FA203B7C26ecD89eB3aD15"; //deployed contract address
+      "0x609a78F41974ccFf53C2B6b23B6eB4A0B8613f6E"; //deployed contract address
   DeployedContract? contract;
   ContractEvent? evnt;
 
@@ -67,7 +67,7 @@ class HomeController extends GetxController {
       abiJson = jsonDecode(abiString);
 
       contract = DeployedContract(
-        ContractAbi.fromJson(jsonEncode(abiJson["abi"]), 'NFTSS'),
+        ContractAbi.fromJson(jsonEncode(abiJson), 'NFTSS'),
         EthereumAddress.fromHex(contractAddress!),
       );
       print("Abit string eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee");

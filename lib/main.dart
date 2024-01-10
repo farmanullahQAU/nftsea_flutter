@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:nft_sea/home_controller.dart';
@@ -62,9 +64,32 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("NFT sea"),
+      ),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
+          if (controller.imageFile != null)
+            Container(
+              height: 50,
+              width: Get.width,
+              child: Image.file(File(controller.imageFile!.path)),
+            ),
+          FloatingActionButton(
+            onPressed: () {
+              controller.uploadtoIPFS();
+            },
+            tooltip: 'iamge',
+            child: const Icon(Icons.upcoming),
+          ),
+          FloatingActionButton(
+            onPressed: () {
+              controller.getImage();
+            },
+            tooltip: 'iamge',
+            child: const Icon(Icons.h_mobiledata),
+          ),
           FloatingActionButton(
             onPressed: () {
               controller.getAll();

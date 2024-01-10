@@ -42,6 +42,7 @@ dependencies:
   get: ^4.6.6
   walletconnect_flutter_v2: ^2.1.11
   decimal: ^2.3.3
+  image_picker: ^1.0.7
 
 dev_dependencies:
   flutter_test:

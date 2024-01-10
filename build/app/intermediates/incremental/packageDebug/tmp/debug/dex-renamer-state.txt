@@ -1,4 +1,0 @@
-#Wed Jan 10 23:10:09 PKT 2024
-base.0=/home/farman/flutterProjects/dapps/nft_sea/build/app/intermediates/dex/debug/mergeDexDebug/classes.dex
-path.0=classes.dex
-renamed.0=classes.dex

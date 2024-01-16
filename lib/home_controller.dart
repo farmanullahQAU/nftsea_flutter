@@ -5,8 +5,6 @@ import 'package:get/get.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nft_sea/models/user_model.dart';
-import 'dart:convert';
-import 'dart:io';
 
 import 'package:http/http.dart' as http;
 // import 'package:nft_sea/utils/constants/wallet_constants.dart';
@@ -52,7 +50,7 @@ class HomeController extends GetxController {
   EthereumAddress? manager;
   String rpcUrl =
       "https://eth-sepolia.g.alchemy.com/v2/hoA0bBbfP3K24FIS1RnOCLOK7ZFPCyy5";
-  List<Player> players = [];
+  List<NFT> nfts = [];
 
   @override
   void onInit() async {
@@ -63,8 +61,7 @@ class HomeController extends GetxController {
     client = Web3Client(rpcUrl, Client());
 
     await initData();
-    // initialize();
-
+    getMarketNfts();
     super.onInit();
   }
 
@@ -94,7 +91,7 @@ class HomeController extends GetxController {
     print(scaledEtherAmount);
   }
 
-  createNFT() async {
+  createNFT(String uri) async {
     final gasPrice =
         EtherAmount.inWei(BigInt.from(50000000000)); // adjust as needed
     // final gasLimit = 21924; // adjust as needed
@@ -112,7 +109,7 @@ class HomeController extends GetxController {
 
           function: ethFunction,
           parameters: [
-            "this is the text uri2",
+            uri,
             BigInt.from(0.001 * 1000000000000000000)
           ], // Adjust parameters accordingly
         ),
@@ -130,7 +127,13 @@ class HomeController extends GetxController {
     }
   }
 
-  getAll() async {
+  Future<BigInt> getEstimatedGasLimit(Credentials credentials) async {
+    return await client!.estimateGas(
+      sender: credentials.address,
+    );
+  }
+
+  Future getMarketNfts() async {
     try {
       final ethFunction = contract!.function("getAllNftOfOwner");
       final result = await client?.call(
@@ -138,47 +141,12 @@ class HomeController extends GetxController {
         function: ethFunction,
         params: [],
       );
-      // Check if the result is not null and has items
-      if (result != null && result.isNotEmpty) {
-        print(result);
-        // Print the entire result for debugging
-        print(result);
-
-        // Access elements individually (assuming NFT has 'creator' property)
-        for (var nftData in result) {
-          print("Creator: ${nftData['creator']}");
-          // Access other properties as needed
-        }
-      } else {
-        print("No NFTs found.");
-      }
-
-      // Handle the result as needed
-    } catch (err) {
-      Get.snackbar("Error", err.toString());
-      print(err);
-    }
-  }
-
-  Future<BigInt> getEstimatedGasLimit(Credentials credentials) async {
-    return await client!.estimateGas(
-      sender: credentials.address,
-    );
-  }
-
-  Future getTotalPlayers() async {
-    try {
-      final result = await client?.call(
-          contract: contract!,
-          function: contract!.function("getTotalMapping"),
-          params: []);
-
-      players.clear();
 
       if (result != null) {
         for (var element in result[0]) {
           final map = element.asMap();
-          players.add(Player.fromMap(map));
+
+          nfts.add(NFT.fromMap(map));
 
           update();
         }
@@ -190,9 +158,35 @@ class HomeController extends GetxController {
 
   getImage() async {
     imageFile = await picker.pickImage(source: ImageSource.gallery);
+    update();
   }
 
-  Future uploadtoIPFS() async {
+  uploadToPinata() async {
+    Map<String, dynamic> metadata = {
+      'name': 'My NFT',
+      'description': 'This is an example NFT',
+      // Add other metadata fields
+    };
+
+    // Upload image
+    String? imageCID = await _uploadImageToIPFS();
+    if (imageCID != null) {
+      print('Image uploaded with CID: $imageCID');
+
+      // Update metadata with the image CID
+      metadata['imageCID'] = imageCID;
+
+      // Upload metadata
+      String? metadataCID = await _uploadMetadataToIPFS(metadata);
+      if (metadataCID != null) {
+        print('Metadata uploaded with CID: $metadataCID');
+
+        createNFT(metadataCID);
+      }
+    }
+  }
+
+  Future<String?> _uploadImageToIPFS() async {
     // Create a multipart request
     var request = http.MultipartRequest(
       'POST',
@@ -215,7 +209,44 @@ class HomeController extends GetxController {
     );
 
     try {
-      // Send the request
+      var response = await request.send();
+
+      // Read the response
+      var responseBody = await response.stream.bytesToString();
+
+      Map<String, dynamic> jsonResponse = jsonDecode(responseBody);
+
+      // Return the IPFS hash
+      return jsonResponse['IpfsHash'];
+    } catch (error) {
+      print('Error uploading to Pinata: $error');
+    }
+    return null;
+  }
+
+  Future<String?> _uploadMetadataToIPFS(Map<String, dynamic> metadata) async {
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('https://api.pinata.cloud/pinning/pinJSONToIPFS'),
+    );
+
+    // Add Pinata API key and secret to the headers
+    request.headers.addAll({
+      'pinata_api_key': 'your_pinata_api_key',
+      'pinata_secret_api_key': 'your_pinata_secret_api_key',
+    });
+
+    // Attach the metadata as a JSON file with the field name "file"
+    request.files.add(
+      http.MultipartFile.fromString(
+        'file',
+        jsonEncode(metadata),
+        filename: 'metadata.json',
+        // contentType: MediaType('application', 'json'),
+      ),
+    );
+
+    try {
       var response = await request.send();
 
       // Read the response
@@ -223,12 +254,11 @@ class HomeController extends GetxController {
 
       // Parse the JSON response
       Map<String, dynamic> jsonResponse = jsonDecode(responseBody);
-      print("Response......................");
-      print(responseBody);
-      // Return the IPFS hash
+
+      // Return the IPFS hash for the metadata
       return jsonResponse['IpfsHash'];
     } catch (error) {
-      print('Error uploading to Pinata: $error');
+      print('Error uploading metadata to Pinata: $error');
       return null;
     }
   }

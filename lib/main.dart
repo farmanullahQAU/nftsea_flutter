@@ -63,52 +63,41 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("NFT sea"),
-      ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          if (controller.imageFile != null)
-            Container(
-              height: 50,
-              width: Get.width,
-              child: Image.file(File(controller.imageFile!.path)),
+    return GetBuilder<HomeController>(builder: (_) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text("NFT sea"),
+        ),
+        floatingActionButton: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            ...controller.nfts.map((e) => Text(e.uri)).toList(),
+            if (controller.imageFile != null)
+              Container(
+                height: 50,
+                width: Get.width,
+                child: Text(controller.imageFile!.path),
+              ),
+            FloatingActionButton(
+              onPressed: () {
+                controller.uploadToPinata();
+              },
+              tooltip: 'iamge',
+              child: const Icon(Icons.upload),
             ),
-          FloatingActionButton(
-            onPressed: () {
-              controller.uploadtoIPFS();
-            },
-            tooltip: 'iamge',
-            child: const Icon(Icons.upcoming),
-          ),
-          FloatingActionButton(
-            onPressed: () {
-              controller.getImage();
-            },
-            tooltip: 'iamge',
-            child: const Icon(Icons.h_mobiledata),
-          ),
-          FloatingActionButton(
-            onPressed: () {
-              controller.getAll();
-            },
-            tooltip: 'Increment',
-            child: const Icon(Icons.get_app),
-          ),
-          FloatingActionButton(
-            onPressed: () {
-              controller.createNFT();
-            },
-            tooltip: 'Increment',
-            child: const Icon(Icons.add),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [Text("Fucking widget")],
-      ),
-    );
+            FloatingActionButton(
+              onPressed: () {
+                controller.getImage();
+              },
+              tooltip: 'iamge',
+              child: const Icon(Icons.image),
+            ),
+          ],
+        ),
+        body: Column(
+          children: [Text("Fucking widget")],
+        ),
+      );
+    });
   }
 }

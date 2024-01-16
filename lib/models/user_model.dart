@@ -1,21 +1,26 @@
 import 'package:web3dart/web3dart.dart';
 
-class Player {
-  final String playerName;
-  final EthereumAddress? playerAddress;
-  final bool isPlayer;
+class NFT {
+  final EthereumAddress creator;
+  final EthereumAddress? owner;
+  final BigInt price;
+  final String uri;
+  bool isSold;
 
-  Player({
-    required this.playerName,
-    required this.isPlayer,
-    this.playerAddress,
+  NFT({
+    required this.creator,
+    required this.owner,
+    required this.price,
+    required this.uri,
+    required this.isSold,
   });
 
-  factory Player.fromMap(dynamic map) {
-    return Player(
-      playerName: map[0] as String,
-      playerAddress: map[1] as EthereumAddress,
-      isPlayer: map[2] as bool,
-    );
+  factory NFT.fromMap(dynamic map) {
+    return NFT(
+        creator: map[0] as EthereumAddress,
+        owner: map[1] as EthereumAddress,
+        price: map[2] as BigInt,
+        uri: map[3] as String,
+        isSold: map[4] as bool);
   }
 }

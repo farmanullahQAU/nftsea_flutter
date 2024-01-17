@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:nft_sea/models/user_model.dart';
-
+import 'package:http_parser/http_parser.dart';
 import 'package:http/http.dart' as http;
 // import 'package:nft_sea/utils/constants/wallet_constants.dart';
 // import 'package:url_launcher/url_launcher_string.dart';
@@ -145,7 +145,8 @@ class HomeController extends GetxController {
       if (result != null) {
         for (var element in result[0]) {
           final map = element.asMap();
-
+          print("data is here");
+          print(map);
           nfts.add(NFT.fromMap(map));
 
           update();
@@ -224,41 +225,106 @@ class HomeController extends GetxController {
     return null;
   }
 
+  // Future<String?> _uploadMetadataToIPFS(Map<String, dynamic> metadata) async {
+  //   print("callllled");
+  //   print(metadata);
+  //   var request = http.MultipartRequest(
+  //     'POST',
+  //     Uri.parse('https://api.pinata.cloud/pinning/pinJSONToIPFS'),
+  //   );
+
+  //   // Add Pinata API key and secret to the headers
+  //   request.headers.addAll({
+  //     'pinata_api_key': "d30d41c4331b10e1b042",
+  //     'pinata_secret_api_key':
+  //         "d39931ed27c5bf956cb46c0e2e0dd292f8ea0dadf2e0b1cafa03def9a1f031e5",
+  //   });
+
+  //   // Attach the metadata as a JSON file with the field name "file"
+  //   request.files.add(
+  //     http.MultipartFile.fromString(
+  //       'file',
+  //       jsonEncode(metadata),
+  //       filename: 'metadata.json',
+  //       contentType: MediaType('application', 'json'),
+  //     ),
+  //   );
+
+  //   try {
+  //     var response = await request.send();
+
+  //     // Read the response
+  //     var responseBody = await response.stream.bytesToString();
+
+  //     // Parse the JSON response
+  //     Map<String, dynamic> jsonResponse = jsonDecode(responseBody);
+  //     print(jsonResponse);
+  //     // Return the IPFS hash for the metadata
+  //     return jsonResponse['IpfsHash'];
+  //   } catch (error) {
+  //     print('Error uploading metadata to Pinata: $error');
+  //     return null;
+  //   }
+  // }
+
   Future<String?> _uploadMetadataToIPFS(Map<String, dynamic> metadata) async {
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('https://api.pinata.cloud/pinning/pinJSONToIPFS'),
-    );
+    print("callllled");
+    print(metadata);
 
-    // Add Pinata API key and secret to the headers
-    request.headers.addAll({
-      'pinata_api_key': 'your_pinata_api_key',
-      'pinata_secret_api_key': 'your_pinata_secret_api_key',
-    });
-
-    // Attach the metadata as a JSON file with the field name "file"
-    request.files.add(
-      http.MultipartFile.fromString(
-        'file',
-        jsonEncode(metadata),
-        filename: 'metadata.json',
-        // contentType: MediaType('application', 'json'),
-      ),
-    );
+    final Uri uri = Uri.parse('https://api.pinata.cloud/pinning/pinJSONToIPFS');
 
     try {
-      var response = await request.send();
+      final http.Response response = await http.post(
+        uri,
+        headers: {
+          'pinata_api_key': "d30d41c4331b10e1b042",
+          'pinata_secret_api_key':
+              "d39931ed27c5bf956cb46c0e2e0dd292f8ea0dadf2e0b1cafa03def9a1f031e5",
+          'Content-Type': 'application/json', // Ensure the content type is JSON
+        },
+        body: jsonEncode(metadata),
+      );
 
-      // Read the response
-      var responseBody = await response.stream.bytesToString();
-
-      // Parse the JSON response
-      Map<String, dynamic> jsonResponse = jsonDecode(responseBody);
-
-      // Return the IPFS hash for the metadata
-      return jsonResponse['IpfsHash'];
+      // Check if the request was successful (status code 200)
+      if (response.statusCode == 200) {
+        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+        print(jsonResponse);
+        // Return the IPFS hash for the metadata
+        return jsonResponse['IpfsHash'];
+      } else {
+        // If the request was not successful, print the error
+        print(
+            'Error uploading metadata to Pinata. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return null;
+      }
     } catch (error) {
       print('Error uploading metadata to Pinata: $error');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getMetadataFromIPFS(String cid) async {
+    try {
+      final Uri uri = Uri.parse('https://ipfs.io/ipfs/$cid');
+
+      final http.Response response = await http.get(uri);
+
+      // Check if the request was successful (status code 200)
+      if (response.statusCode == 200) {
+        // Parse the JSON response
+        Map<String, dynamic> jsonResponse = jsonDecode(response.body);
+
+        return jsonResponse;
+      } else {
+        // If the request was not successful, print the error
+        print(
+            'Error fetching metadata from IPFS. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return null;
+      }
+    } catch (error) {
+      print('Error fetching metadata from IPFS: $error');
       return null;
     }
   }

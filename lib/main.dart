@@ -71,7 +71,6 @@ class _MyHomePageState extends State<MyHomePage> {
         floatingActionButton: Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            ...controller.nfts.map((e) => Text(e.uri)).toList(),
             if (controller.imageFile != null)
               Container(
                 height: 50,
@@ -95,7 +94,26 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         body: Column(
-          children: [Text("Fucking widget")],
+          children: [
+            ...controller.nfts
+                .map((e) => Column(
+                      children: [
+                        FutureBuilder(
+                            future: controller.getMetadataFromIPFS(e.uri),
+                            builder: ((context, snapshot) => Column(
+                                  children: [
+                                    Image.network(
+                                      "https://ipfs.io/ipfs/${snapshot.data?["imageCID"] ?? ""}",
+                                      width: context.width * 0.3,
+                                      height: context.width * 0.2,
+                                    ),
+                                    Text(snapshot.data?["name"] ?? ""),
+                                  ],
+                                )))
+                      ],
+                    ))
+                .toList(),
+          ],
         ),
       );
     });

@@ -39,7 +39,7 @@ class HomeController extends GetxController {
   dynamic abiJson;
 
   String? contractAddress =
-      "0xbc98C4292CaB675B2359B52C7F84c2ba3b7E375D"; //deployed contract address
+      "0xbb342c105FfF6AE8bCffb2Cd3DA3e8D5334e6023"; //deployed contract address
   DeployedContract? contract;
   ContractEvent? evnt;
 
@@ -103,7 +103,7 @@ class HomeController extends GetxController {
       final result = await client!.sendTransaction(
         credentials,
         Transaction.callContract(
-          gasPrice: gasPrice,
+          // gasPrice: gasPrice,
           // maxGas: gasLimit,
           contract: this.contract!,
 
@@ -134,6 +134,7 @@ class HomeController extends GetxController {
   }
 
   Future getMarketNfts() async {
+    print("SSSSSSSSSSSSSSSSSsss");
     try {
       final ethFunction = contract!.function("getAllNftOfOwner");
       final result = await client?.call(
@@ -163,9 +164,10 @@ class HomeController extends GetxController {
   }
 
   uploadToPinata() async {
+    await getImage();
     Map<String, dynamic> metadata = {
-      'name': 'My NFT',
-      'description': 'This is an example NFT',
+      'name': "The Art",
+      'description': 'This is an another example NFT',
       // Add other metadata fields
     };
 
@@ -304,9 +306,9 @@ class HomeController extends GetxController {
     }
   }
 
-  Future<Map<String, dynamic>?> getMetadataFromIPFS(String cid) async {
+  Future<Map<String, dynamic>?> getMetadataFromIPFS(String metadataCID) async {
     try {
-      final Uri uri = Uri.parse('https://ipfs.io/ipfs/$cid');
+      final Uri uri = Uri.parse('https://ipfs.io/ipfs/$metadataCID');
 
       final http.Response response = await http.get(uri);
 
@@ -327,5 +329,10 @@ class HomeController extends GetxController {
       print('Error fetching metadata from IPFS: $error');
       return null;
     }
+  }
+
+  double convertWeiToEther(BigInt wei) {
+    EtherAmount etherAmount = EtherAmount.inWei(wei);
+    return etherAmount.getValueInUnit(EtherUnit.ether);
   }
 }

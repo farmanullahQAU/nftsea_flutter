@@ -43,6 +43,7 @@ dependencies:
   walletconnect_flutter_v2: ^2.1.11
   decimal: ^2.3.3
   image_picker: ^1.0.7
+  cached_network_image: ^3.3.1
 
 dev_dependencies:
   flutter_test:

@@ -7,12 +7,15 @@ class NFT {
   final String uri;
   bool isSold;
 
+  BigInt tokenId;
+
   NFT({
     required this.creator,
     required this.owner,
     required this.price,
     required this.uri,
     required this.isSold,
+    required this.tokenId,
   });
 
   factory NFT.fromMap(dynamic map) {
@@ -21,6 +24,7 @@ class NFT {
         owner: map[1] as EthereumAddress,
         price: map[2] as BigInt,
         uri: map[3] as String,
-        isSold: map[4] as bool);
+        isSold: map[4] as bool,
+        tokenId: map[5] as BigInt);
   }
 }

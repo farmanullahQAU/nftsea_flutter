@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:nft_sea/home/view.dart';
 import 'package:nft_sea/home_controller.dart';
 
 void main() {
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      home: HomeView(),
     );
   }
 }
@@ -108,6 +109,10 @@ class _MyHomePageState extends State<MyHomePage> {
                                       height: context.width * 0.2,
                                     ),
                                     Text(snapshot.data?["name"] ?? ""),
+                                    Text(controller
+                                        .convertWeiToEther(
+                                            snapshot.data!["price"])
+                                        .toString())
                                   ],
                                 )))
                       ],
